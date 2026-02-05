@@ -1,0 +1,109 @@
+name: 'OG Image Generator'
+description: 'Generate OG images for your docs, blog, or static site'
+author: 'ogimage.art'
+
+branding:
+  icon: 'image'
+  color: 'purple'
+
+inputs:
+  title:
+    description: 'Title text for the image'
+    required: true
+  subtitle:
+    description: 'Subtitle text'
+    required: false
+    default: ''
+  template:
+    description: 'Template style (gradient, dark, sunset, ocean, forest, midnight, fire, minimal, card, glass, stripe)'
+    required: false
+    default: 'gradient'
+  size:
+    description: 'Output size (og, twitter, instagram, youtube, pinterest)'
+    required: false
+    default: 'og'
+  font:
+    description: 'Font style (modern, elegant, bold, mono)'
+    required: false
+    default: 'modern'
+  output:
+    description: 'Output file path'
+    required: false
+    default: 'og-image.png'
+  license-key:
+    description: 'License key to remove watermark'
+    required: false
+    default: ''
+  lite:
+    description: 'Enable lite mode for smaller files'
+    required: false
+    default: 'false'
+
+outputs:
+  image-path:
+    description: 'Path to the generated image'
+    value: ${{ steps.generate.outputs.path }}
+  image-url:
+    description: 'URL to generate the image dynamically'
+    value: ${{ steps.generate.outputs.url }}
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Generate OG Image
+      id: generate
+      shell: bash
+      run: |
+        # Build URL
+        BASE_URL="https://ogimage.art/api/og"
+        PARAMS="title=${{ inputs.title }}"
+        
+        if [ -n "${{ inputs.subtitle }}" ]; then
+          PARAMS="${PARAMS}&subtitle=${{ inputs.subtitle }}"
+        fi
+        
+        PARAMS="${PARAMS}&template=${{ inputs.template }}"
+        PARAMS="${PARAMS}&size=${{ inputs.size }}"
+        
+        if [ "${{ inputs.font }}" != "modern" ]; then
+          PARAMS="${PARAMS}&font=${{ inputs.font }}"
+        fi
+        
+        if [ "${{ inputs.lite }}" == "true" ]; then
+          PARAMS="${PARAMS}&lite=true"
+        fi
+        
+        if [ -n "${{ inputs.license-key }}" ]; then
+          PARAMS="${PARAMS}&key=${{ inputs.license-key }}"
+        fi
+        
+        # URL encode the params
+        ENCODED_TITLE=$(echo "${{ inputs.title }}" | sed 's/ /%20/g')
+        ENCODED_SUBTITLE=$(echo "${{ inputs.subtitle }}" | sed 's/ /%20/g')
+        
+        URL="${BASE_URL}?title=${ENCODED_TITLE}"
+        if [ -n "${{ inputs.subtitle }}" ]; then
+          URL="${URL}&subtitle=${ENCODED_SUBTITLE}"
+        fi
+        URL="${URL}&template=${{ inputs.template }}&size=${{ inputs.size }}"
+        
+        if [ "${{ inputs.font }}" != "modern" ]; then
+          URL="${URL}&font=${{ inputs.font }}"
+        fi
+        
+        if [ "${{ inputs.lite }}" == "true" ]; then
+          URL="${URL}&lite=true"
+        fi
+        
+        if [ -n "${{ inputs.license-key }}" ]; then
+          URL="${URL}&key=${{ inputs.license-key }}"
+        fi
+        
+        # Download image
+        curl -s -o "${{ inputs.output }}" "${URL}"
+        
+        echo "path=${{ inputs.output }}" >> $GITHUB_OUTPUT
+        echo "url=${URL}" >> $GITHUB_OUTPUT
+        
+        echo "✅ Generated OG image: ${{ inputs.output }}"
+        ls -la "${{ inputs.output }}"
