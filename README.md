@@ -5,7 +5,7 @@ Generate beautiful OG images for your docs, blog, or static site automatically i
 ## Usage
 
 ```yaml
-- uses: ogimage/generate@v1
+- uses: abhishek-kundalia/ogimage-action@v1
   with:
     title: 'My Blog Post Title'
     subtitle: 'A brief description'
@@ -56,7 +56,7 @@ jobs:
       - uses: actions/checkout@v4
       
       - name: Generate OG Image
-        uses: ogimage/generate@v1
+        uses: abhishek-kundalia/ogimage-action@v1
         with:
           title: ${{ github.event.head_commit.message }}
           template: dark
@@ -74,7 +74,7 @@ jobs:
 ### Generate for documentation
 
 ```yaml
-- uses: ogimage/generate@v1
+- uses: abhishek-kundalia/ogimage-action@v1
   with:
     title: 'API Reference'
     subtitle: 'Complete documentation for our REST API'
